@@ -1,7 +1,6 @@
-
 ;; title: hello-world
 ;; version:
-;; summary:
+;; summary: a sample hello-world project
 ;; description:
 
 ;; traits
@@ -20,6 +19,13 @@
 ;;
 
 ;; public functions
+(define-public (say-hi)
+    (ok "hello world")
+)
+
+(define-public (echo-number (val int))
+    (ok val)
+)
 ;;
 
 ;; read only functions
@@ -27,4 +33,3 @@
 
 ;; private functions
 ;;
-
