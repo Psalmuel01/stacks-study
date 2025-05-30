@@ -1,21 +1,17 @@
-
+import { Cl } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 
 const accounts = simnet.getAccounts();
 const address1 = accounts.get("wallet_1")!;
 
-/*
-  The test below is an example. To learn more, read the testing documentation here:
-  https://docs.hiro.so/stacks/clarinet-js-sdk
-*/
-
-describe("example tests", () => {
-  it("ensures simnet is well initialised", () => {
-    expect(simnet.blockHeight).toBeDefined();
+describe("hello-world contract test", () => {
+  it("should say hello world", () => {
+    const { result } = simnet.callPublicFn("hello-world", "say-hi", [], address1);
+    expect(result).toBeOk(Cl.stringAscii("hello world"));
   });
 
-  // it("shows an example", () => {
-  //   const { result } = simnet.callReadOnlyFn("counter", "get-counter", [], address1);
-  //   expect(result).toBeUint(0);
-  // });
+  it("should echo the input number", () => {
+    const { result } = simnet.callPublicFn("hello-world", "echo-number", [Cl.int("42")], address1);
+    expect(result).toBeOk(Cl.int(42));
+  });
 });
