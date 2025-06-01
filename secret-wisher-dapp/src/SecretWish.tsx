@@ -14,7 +14,7 @@ const mockWeb3 = {
     }
 };
 
-const SecretWishesApp = () => {
+const SecretWisher = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [account, setAccount] = useState('');
 
@@ -164,7 +164,7 @@ const SecretWishesApp = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800">
+        <div className="min-h-screen w-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800">
             {/* Notification */}
             {notification && (
                 <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in">
@@ -174,9 +174,9 @@ const SecretWishesApp = () => {
 
             <div className="container mx-auto px-4 py-8 max-w-4xl">
                 {/* Header */}
-                <div className="text-center mb-12">
+                <div className="text-center mt-5 mb-12">
                     <h1 className="text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                        Secret Wishes
+                        Secret Wisher
                     </h1>
                     <p className="text-xl text-white/90 mb-8">
                         Share your deepest wishes anonymously and help grant others' dreams
@@ -274,8 +274,8 @@ const SecretWishesApp = () => {
                                             By {formatAddress(wish.author)} • {formatTime(wish.timestamp)}
                                         </span>
                                         <span className={`px-3 py-1 rounded-full text-sm font-semibold ${wish.isGranted
-                                                ? 'bg-green-500/20 text-green-300'
-                                                : 'bg-yellow-500/20 text-yellow-300'
+                                            ? 'bg-green-500/20 text-green-300'
+                                            : 'bg-yellow-500/20 text-yellow-300'
                                             }`}>
                                             {wish.isGranted ? '✨ Granted' : '⏳ Pending'}
                                         </span>
@@ -321,4 +321,4 @@ const SecretWishesApp = () => {
     );
 };
 
-export default SecretWishesApp;
+export default SecretWisher;
