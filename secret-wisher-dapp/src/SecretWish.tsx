@@ -1,48 +1,51 @@
 import { useState, useEffect, useCallback } from 'react';
-import { connect, disconnect } from '@stacks/connect';
+import { connect, disconnect, isConnected, request } from '@stacks/connect';
 
-
-// Mock Web3 functions (to replace with actual Web3 integration)
-const mockWeb3 = {
-    isConnected: false,
-    account: null as string | null,
-    connect: async () => {
-        const response = await connect();
-        const stxAddress = response.addresses.find(addr => addr.symbol === 'STX')?.address;
-        return stxAddress;
-    },
-    disconnect: () => {
-        disconnect();
-        mockWeb3.isConnected = false;
-        mockWeb3.account = null;
-    }
+type Wish = {
+    id: number;
+    text: string;
+    author: string;
+    timestamp: number;
+    isGranted: boolean;
+    grantedBy: string | null;
 };
 
 const SecretWisher = () => {
-    const [isConnected, setIsConnected] = useState(false);
     const [account, setAccount] = useState('');
-
-    type Wish = {
-        id: number;
-        text: string;
-        author: string;
-        timestamp: number;
-        isGranted: boolean;
-        grantedBy: string | null;
-    };
-
+    const authenticated = isConnected();
     const [wishes, setWishes] = useState<Wish[]>([]);
     const [newWish, setNewWish] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState('');
 
+    // Check connection status and get account
+    useEffect(() => {
+        const checkConnection = async () => {
+            try {
+                const connected = isConnected();
+
+                if (connected) {
+                    const accounts = await request('stx_getAccounts');
+                    const stxAddress = accounts.accounts?.find((addr) => addr.symbol === 'STX')?.address;
+                    if (stxAddress) {
+                        setAccount(stxAddress);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking connection:', error);
+            }
+        };
+
+        checkConnection();
+    }, []);
+
     // Mock data for initial wishes
-    const mockWishes = [
+    const mockWishes: Wish[] = [
         {
             id: 1,
             text: "I wish for world peace and understanding among all people",
-            author: "0xAbcd1234567890123456789012345678901234abcd",
+            author: "SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7",
             timestamp: Date.now() - 3600000,
             isGranted: false,
             grantedBy: null
@@ -50,10 +53,10 @@ const SecretWisher = () => {
         {
             id: 2,
             text: "I wish to find my true passion in life and pursue it fearlessly",
-            author: "0xEfgh5678901234567890123456789012345678efgh",
+            author: "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE",
             timestamp: Date.now() - 7200000,
             isGranted: true,
-            grantedBy: "0x9876543210987654321098765432109876543210"
+            grantedBy: "SP1K1A1PMGW2ZJCNF46NWZWHG8TS1D23EGH1KNK60"
         }
     ];
 
@@ -65,11 +68,7 @@ const SecretWisher = () => {
     const connectWallet = async () => {
         setIsLoading(true);
         try {
-            const walletAccount = await mockWeb3.connect();
-            setIsConnected(true);
-            setAccount(walletAccount);
-            mockWeb3.isConnected = true;
-            mockWeb3.account = walletAccount;
+            await connect();
             showNotification('Wallet connected successfully!');
         } catch (error) {
             console.error('Failed to connect wallet:', error);
@@ -80,10 +79,13 @@ const SecretWisher = () => {
     };
 
     const disconnectWallet = () => {
-        setIsConnected(false);
-        setAccount('');
-        mockWeb3.disconnect();
-        showNotification('Wallet disconnected');
+        try {
+            disconnect();
+            setAccount('');
+            showNotification('Wallet disconnected');
+        } catch (error) {
+            console.error('Error disconnecting:', error);
+        }
     };
 
     const fetchWishes = useCallback(async () => {
@@ -100,14 +102,14 @@ const SecretWisher = () => {
     }, []);
 
     const submitWish = async () => {
-        if (!newWish.trim() || !isConnected) return;
+        if (!newWish.trim() || !authenticated) return;
 
         setIsSubmitting(true);
         try {
             // Simulate blockchain transaction
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            const wish = {
+            const wish: Wish = {
                 id: Date.now(),
                 text: newWish.trim(),
                 author: account,
@@ -128,7 +130,7 @@ const SecretWisher = () => {
     };
 
     const grantWish = async (wishId: number) => {
-        if (!isConnected) return;
+        if (!authenticated) return;
 
         try {
             // Simulate blockchain transaction
@@ -156,6 +158,7 @@ const SecretWisher = () => {
     }, [fetchWishes]);
 
     const formatAddress = (address: string) => {
+        if (!address) return '';
         return `${address.slice(0, 6)}...${address.slice(-4)}`;
     };
 
@@ -171,7 +174,7 @@ const SecretWisher = () => {
         <div className="min-h-screen w-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800">
             {/* Notification */}
             {notification && (
-                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in">
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-0">
                     {notification}
                 </div>
             )}
@@ -186,7 +189,7 @@ const SecretWisher = () => {
                         Share your deepest wishes anonymously and help grant others' dreams
                     </p>
 
-                    {!isConnected ? (
+                    {!authenticated ? (
                         <button
                             className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 
                          text-white font-semibold py-3 px-8 rounded-full shadow-lg 
@@ -199,7 +202,7 @@ const SecretWisher = () => {
                                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                                     Connecting...
                                 </div>
-                            ) : 'Connect Wallet'}
+                            ) : 'Connect Stacks Wallet'}
                         </button>
                     ) : (
                         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 inline-block">
@@ -209,14 +212,14 @@ const SecretWisher = () => {
                            transform hover:scale-105 transition-all duration-300"
                                 onClick={disconnectWallet}
                             >
-                                {formatAddress(account)} - Disconnect
+                                {account ? formatAddress(account) : 'Connected'} - Disconnect
                             </button>
                         </div>
                     )}
                 </div>
 
                 {/* Add Wish Section */}
-                {isConnected && (
+                {authenticated && (
                     <div className="bg-white/15 backdrop-blur-lg rounded-3xl p-8 mb-12 border border-white/20">
                         <h2 className="text-2xl font-bold text-white text-center mb-6">Make a Secret Wish</h2>
                         <textarea
@@ -248,6 +251,11 @@ const SecretWisher = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Connection Status Debug (Remove in production) */}
+                <div className="text-center mb-4 text-white/70 text-sm">
+                    Status: {authenticated ? `Connected (${formatAddress(account)})` : 'Not Connected'}
+                </div>
 
                 {/* Wishes List */}
                 <div className="space-y-6">
@@ -286,13 +294,13 @@ const SecretWisher = () => {
                                     </div>
                                 </div>
 
-                                {wish.isGranted && (
+                                {wish.isGranted && wish.grantedBy && (
                                     <p className="text-green-300 text-sm mb-4">
-                                        Granted by {wish.grantedBy ? formatAddress(wish.grantedBy) : 'Unknown'} ✨
+                                        Granted by {formatAddress(wish.grantedBy)} ✨
                                     </p>
                                 )}
 
-                                {!wish.isGranted && isConnected && wish.author !== account && (
+                                {!wish.isGranted && authenticated && wish.author !== account && (
                                     <button
                                         className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700
                                text-white font-semibold py-2 px-6 rounded-full shadow-lg
@@ -307,20 +315,6 @@ const SecretWisher = () => {
                     )}
                 </div>
             </div>
-
-            <style>{`
-        @keyframes slide-in {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-        .animate-slide-in {
-          animation: slide-in 0.3s ease-out;
-        }
-      `}</style>
         </div>
     );
 };
