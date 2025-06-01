@@ -10,7 +10,7 @@ plan:
       transactions:
         - contract-publish:
             contract-name: secret-wisher
-            expected-sender: ST1E3T1B84XSANG319HEBB2XRNNBBN7T39ECPZDMH
+            expected-sender: STZQGJDDZ0A18J0MPWBAN69J3SQFEWEYBST7BAKG
             cost: 3475
             path: contracts/secret-wisher.clar
             anchor-block-only: true
