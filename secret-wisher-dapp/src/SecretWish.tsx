@@ -1,14 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
+import { connect, disconnect } from '@stacks/connect';
+
 
 // Mock Web3 functions (to replace with actual Web3 integration)
 const mockWeb3 = {
     isConnected: false,
     account: null as string | null,
     connect: async () => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return '0x1234567890abcdef1234567890abcdef12345678';
+        const response = await connect();
+        const stxAddress = response.addresses.find(addr => addr.symbol === 'STX')?.address;
+        return stxAddress;
     },
     disconnect: () => {
+        disconnect();
         mockWeb3.isConnected = false;
         mockWeb3.account = null;
     }
