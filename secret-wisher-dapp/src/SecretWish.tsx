@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { connect, disconnect, isConnected, request } from '@stacks/connect';
+import { connect, disconnect, isConnected } from '@stacks/connect';
 
 type Wish = {
     id: number;
@@ -18,27 +18,6 @@ const SecretWisher = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState('');
-
-    // Check connection status and get account
-    useEffect(() => {
-        const checkConnection = async () => {
-            try {
-                const connected = isConnected();
-
-                if (connected) {
-                    const accounts = await request('stx_getAccounts');
-                    const stxAddress = accounts.accounts?.find((addr) => addr.symbol === 'STX')?.address;
-                    if (stxAddress) {
-                        setAccount(stxAddress);
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking connection:', error);
-            }
-        };
-
-        checkConnection();
-    }, []);
 
     // Mock data for initial wishes
     const mockWishes: Wish[] = [
@@ -68,7 +47,12 @@ const SecretWisher = () => {
     const connectWallet = async () => {
         setIsLoading(true);
         try {
-            await connect();
+            const response = await connect();
+            // const stxAddress = response.addresses.find(addr => addr.addressType === 'stacks')?.address // for xverse
+            // const stxAddress = response.addresses.find(addr => addr.symbol === 'STX')?.address; // for leather
+            const stxAddress = response.addresses[2].address;
+            console.log('Connected to wallet:', stxAddress);
+            setAccount(stxAddress || '');
             showNotification('Wallet connected successfully!');
         } catch (error) {
             console.error('Failed to connect wallet:', error);
@@ -81,7 +65,6 @@ const SecretWisher = () => {
     const disconnectWallet = () => {
         try {
             disconnect();
-            setAccount('');
             showNotification('Wallet disconnected');
         } catch (error) {
             console.error('Error disconnecting:', error);
