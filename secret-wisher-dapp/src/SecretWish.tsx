@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { connect, disconnect, isConnected } from '@stacks/connect';
+import { useCallContract } from './hooks/useCallContract';
+import { Cl } from '@stacks/transactions';
 
 type Wish = {
     id: number;
@@ -18,6 +20,8 @@ const SecretWisher = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState('');
+
+    const { callContract } = useCallContract();
 
     // Mock data for initial wishes
     const mockWishes: Wish[] = [
@@ -100,6 +104,15 @@ const SecretWisher = () => {
                 isGranted: false,
                 grantedBy: null
             };
+
+            const response = await callContract({
+                functionName: 'make-wish',
+                functionArgs: [
+                    Cl.stringAscii(wish.text),
+                ],
+            });
+
+            alert(`Transaction submitted: ${response}`);
 
             setWishes(prev => [wish, ...prev]);
             setNewWish('');
