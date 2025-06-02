@@ -1,3 +1,9 @@
+;; title: tic-tac-toe
+;; version: 1.0.0
+;; summary: a tic tac toe game built using Clarity and deployed on the Stacks blockchain.
+;; description: a contract that allows players to play tic tac toe against each other.
+
+;; constants
 (define-constant THIS_CONTRACT (as-contract tx-sender)) ;; The address of this contract itself
 (define-constant ERR_MIN_BET_AMOUNT u100) ;; Error thrown when a player tries to create a game with a bet amount less than the minimum (0.0001 STX)
 (define-constant ERR_INVALID_MOVE u101) ;; Error thrown when a move is invalid, i.e. not within range of the board or not an X or an O
@@ -5,9 +11,11 @@
 (define-constant ERR_GAME_CANNOT_BE_JOINED u103) ;; Error thrown when a game cannot be joined, usually because it already has two players
 (define-constant ERR_NOT_YOUR_TURN u104) ;; Error thrown when a player tries to make a move when it is not their turn
 
+;; data vars
 ;; The Game ID to use for the next game
 (define-data-var latest-game-id uint u0)
 
+;; data maps
 (define-map games
     uint ;; Key (Game ID)
     {
@@ -21,28 +29,7 @@
     }
 )
 
-(define-private (validate-move
-        (board (list 9 uint))
-        (move-index uint)
-        (move uint)
-    )
-    (let (
-            ;; Validate that the move is being played within range of the board
-            (index-in-range (and (>= move-index u0) (< move-index u9)))
-            ;; Validate that the move is either an X or an O
-            (x-or-o (or (is-eq move u1) (is-eq move u2)))
-            ;; Validate that the cell the move is being played on is currently empty
-            (empty-spot (is-eq (unwrap! (element-at? board move-index) false) u0))
-        )
-        ;; All three conditions must be true for the move to be valid
-        (and
-            (is-eq index-in-range true)
-            (is-eq x-or-o true)
-            empty-spot
-        )
-    )
-)
-
+;; public functions
 (define-public (create-game
         (bet-amount uint)
         (move-index uint)
@@ -139,46 +126,6 @@
     )
 )
 
-;; Given a board and three cells to look at on the board
-;; Return true if all three are not empty and are the same value (all X or all O)
-;; Return false if any of the three is empty or a different value
-(define-private (is-line
-        (board (list 9 uint))
-        (a uint)
-        (b uint)
-        (c uint)
-    )
-    (let (
-            ;; Value of cell at index a
-            (a-val (unwrap! (element-at? board a) false))
-            ;; Value of cell at index b
-            (b-val (unwrap! (element-at? board b) false))
-            ;; Value of cell at index c
-            (c-val (unwrap! (element-at? board c) false))
-        )
-        ;; a-val must equal b-val and must also equal c-val while not being empty (non-zero)
-        (and
-            (is-eq a-val b-val)
-            (is-eq a-val c-val)
-            (not (is-eq a-val u0))
-        )
-    )
-)
-
-;; Given a board, return true if any possible three-in-a-row line has been completed
-(define-private (has-won (board (list 9 uint)))
-    (or
-        (is-line board u0 u1 u2) ;; Row 1
-        (is-line board u3 u4 u5) ;; Row 2
-        (is-line board u6 u7 u8) ;; Row 3
-        (is-line board u0 u3 u6) ;; Column 1
-        (is-line board u1 u4 u7) ;; Column 2
-        (is-line board u2 u5 u8) ;; Column 3
-        (is-line board u0 u4 u8) ;; Left to Right Diagonal
-        (is-line board u2 u4 u6) ;; Right to Left Diagonal
-    )
-)
-
 (define-public (play
         (game-id uint)
         (move-index uint)
@@ -246,6 +193,71 @@
         (ok game-id)
     )
 )
+
+;; private functions
+(define-private (validate-move
+        (board (list 9 uint))
+        (move-index uint)
+        (move uint)
+    )
+    (let (
+            ;; Validate that the move is being played within range of the board
+            (index-in-range (and (>= move-index u0) (< move-index u9)))
+            ;; Validate that the move is either an X or an O
+            (x-or-o (or (is-eq move u1) (is-eq move u2)))
+            ;; Validate that the cell the move is being played on is currently empty
+            (empty-spot (is-eq (unwrap! (element-at? board move-index) false) u0))
+        )
+        ;; All three conditions must be true for the move to be valid
+        (and
+            (is-eq index-in-range true)
+            (is-eq x-or-o true)
+            empty-spot
+        )
+    )
+)
+
+;; Given a board and three cells to look at on the board
+;; Return true if all three are not empty and are the same value (all X or all O)
+;; Return false if any of the three is empty or a different value
+(define-private (is-line
+        (board (list 9 uint))
+        (a uint)
+        (b uint)
+        (c uint)
+    )
+    (let (
+            ;; Value of cell at index a
+            (a-val (unwrap! (element-at? board a) false))
+            ;; Value of cell at index b
+            (b-val (unwrap! (element-at? board b) false))
+            ;; Value of cell at index c
+            (c-val (unwrap! (element-at? board c) false))
+        )
+        ;; a-val must equal b-val and must also equal c-val while not being empty (non-zero)
+        (and
+            (is-eq a-val b-val)
+            (is-eq a-val c-val)
+            (not (is-eq a-val u0))
+        )
+    )
+)
+
+;; Given a board, return true if any possible three-in-a-row line has been completed
+(define-private (has-won (board (list 9 uint)))
+    (or
+        (is-line board u0 u1 u2) ;; Row 1
+        (is-line board u3 u4 u5) ;; Row 2
+        (is-line board u6 u7 u8) ;; Row 3
+        (is-line board u0 u3 u6) ;; Column 1
+        (is-line board u1 u4 u7) ;; Column 2
+        (is-line board u2 u5 u8) ;; Column 3
+        (is-line board u0 u4 u8) ;; Left to Right Diagonal
+        (is-line board u2 u4 u6) ;; Right to Left Diagonal
+    )
+)
+
+;; read only functions
 
 (define-read-only (get-game (game-id uint))
     (map-get? games game-id)
