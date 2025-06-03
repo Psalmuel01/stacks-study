@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { connect, disconnect, isConnected } from '@stacks/connect';
-import { useCallContract } from './hooks/useCallContract';
+import { useContract } from './hooks/useContract';
 import { Cl } from '@stacks/transactions';
 
 type Wish = {
@@ -21,27 +21,67 @@ const SecretWisher = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState('');
 
-    const { callContract } = useCallContract();
+    const { callContract, readContract } = useContract();
+    useEffect(() => {
+        const fetchAllWishes = async () => {
+            setIsLoading(true);
+            try {
+                const noOfWishes = await readContract("get-total-wishes");
+                // @ts-expect-error value type
+                const totalWishes = Number(await noOfWishes.value);
+                console.log('totalWishes', totalWishes);
 
-    // Mock data for initial wishes
-    const mockWishes: Wish[] = [
-        {
-            id: 1,
-            text: "I wish for world peace and understanding among all people",
-            author: "SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7",
-            timestamp: Date.now() - 3600000,
-            isGranted: false,
-            grantedBy: null
-        },
-        {
-            id: 2,
-            text: "I wish to find my true passion in life and pursue it fearlessly",
-            author: "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE",
-            timestamp: Date.now() - 7200000,
-            isGranted: true,
-            grantedBy: "SP1K1A1PMGW2ZJCNF46NWZWHG8TS1D23EGH1KNK60"
-        }
-    ];
+                // 2. Fetch all wishes
+                const wishPromises = [];
+                for (let i = 1; i <= totalWishes; i++) {
+                    const wish = await readContract("get-wish-text", [Cl.uint(i)]);
+                    // @ts-expect-error value type
+                    wishPromises.push(await wish.value.value);
+                }
+                const wishResults = await Promise.all(wishPromises);
+                console.log('wishResults', wishResults);
+
+                // 3. Map results to your Wish type (adjust parsing as needed)
+                const wishesArray = wishResults.map((result: string, idx: number) => ({
+                    id: idx + 1,
+                    text: result,
+                    author: account,
+                    timestamp: 0,
+                    isGranted: false,
+                    grantedBy: null,
+                }));
+
+                setWishes(wishesArray);
+            } catch (error) {
+                console.error('Failed to fetch wishes:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAllWishes();
+    }, [readContract, account]);
+
+
+    // // Mock data for initial wishes
+    // const mockWishes: Wish[] = [
+    //     {
+    //         id: 1,
+    //         text: "I wish for world peace and understanding among all people",
+    //         author: "SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7",
+    //         timestamp: Date.now() - 3600000,
+    //         isGranted: false,
+    //         grantedBy: null
+    //     },
+    //     {
+    //         id: 2,
+    //         text: "I wish to find my true passion in life and pursue it fearlessly",
+    //         author: "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE",
+    //         timestamp: Date.now() - 7200000,
+    //         isGranted: true,
+    //         grantedBy: "SP1K1A1PMGW2ZJCNF46NWZWHG8TS1D23EGH1KNK60"
+    //     }
+    // ];
 
     const showNotification = (message: string) => {
         setNotification(message);
@@ -75,18 +115,26 @@ const SecretWisher = () => {
         }
     };
 
-    const fetchWishes = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setWishes([...mockWishes]);
-        } catch (error) {
-            console.error('Failed to fetch wishes:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+    // const fetchWishes = useCallback(async () => {
+    //     setIsLoading(true);
+    //     try {
+    //         // Simulate API call
+    //         await new Promise(resolve => setTimeout(resolve, 500));
+    //         setWishes([...mockWishes]);
+    //     } catch (error) {
+    //         console.error('Failed to fetch wishes:', error);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // }, []);
+
+    // useEffect(() => {
+    //     fetchWishes();
+
+    //     // Auto-refresh wishes every 30 seconds
+    //     const interval = setInterval(fetchWishes, 30000);
+    //     return () => clearInterval(interval);
+    // }, [fetchWishes]);
 
     const submitWish = async () => {
         if (!newWish.trim() || !authenticated) return;
@@ -144,14 +192,6 @@ const SecretWisher = () => {
             showNotification('Failed to grant wish');
         }
     };
-
-    useEffect(() => {
-        fetchWishes();
-
-        // Auto-refresh wishes every 30 seconds
-        const interval = setInterval(fetchWishes, 30000);
-        return () => clearInterval(interval);
-    }, [fetchWishes]);
 
     const formatAddress = (address: string) => {
         if (!address) return '';
