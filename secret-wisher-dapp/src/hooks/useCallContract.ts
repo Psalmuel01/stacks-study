@@ -7,16 +7,18 @@ interface CallContractParams {
     functionArgs?: ClarityValue[];
 }
 
-const contractAddress = "ST2A2DJN1S6CPYDR5T00RBNNQKV6XZDKQDFJTYW1V.secret-wisher"
+const contract = "ST2A2DJN1S6CPYDR5T00RBNNQKV6XZDKQDFJTYW1V.secret-wisher"
 
 export function useCallContract() {
     const callContract = useCallback(async ({
         functionName,
-        functionArgs = [],
+        functionArgs,
     }: CallContractParams) => {
         try {
+            console.log("functionName", functionName);
+            console.log("functionArgs", functionArgs);
             const response = await request('stx_callContract', {
-                contract: contractAddress,
+                contract,
                 functionName,
                 functionArgs,
                 network: 'testnet',

@@ -108,11 +108,11 @@ const SecretWisher = () => {
             const response = await callContract({
                 functionName: 'make-wish',
                 functionArgs: [
-                    Cl.stringAscii(wish.text),
+                    Cl.stringUtf8(wish.text),
                 ],
             });
 
-            alert(`Transaction submitted: ${response}`);
+            console.log(`Transaction submitted: ${response}`);
 
             setWishes(prev => [wish, ...prev]);
             setNewWish('');
