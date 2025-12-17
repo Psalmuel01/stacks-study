@@ -1,12 +1,28 @@
-(define-constant UNLOCK_TIME u1700000000) ;; unix timestamp
+;; ===== Constants =====
+(define-constant EARLY_PENALTY_BP u500) ;; 5% penalty (basis points)
+(define-constant BASIS_POINTS u10000)
 
-(define-data-var locked-amount uint u0)
-(define-data-var owner principal tx-sender)
+;; ===== Storage =====
+(define-map vaults
+  principal
+  {
+    balance: uint,
+    unlock-time: uint
+  }
+)
 
-;; Lock STX into the contract
-(define-public (lock (amount uint))
-  (begin
+;; ===== Helpers =====
+
+(define-read-only (get-vault (user principal))
+  (map-get? vaults user)
+)
+
+;; ===== Deposit =====
+(define-public (deposit (amount uint) (unlock-time uint))
+  (let ((now stacks-block-time))
     (asserts! (> amount u0) (err u100))
+    (asserts! (> unlock-time now) (err u101))
+
     (try!
       (stx-transfer?
         amount
@@ -14,31 +30,82 @@
         tx-sender
       )
     )
-    (var-set locked-amount (+ (var-get locked-amount) amount))
+
+    (map-set vaults tx-sender {
+      balance: (+ amount (default-to u0 (get balance (get-vault tx-sender)))),
+      unlock-time: unlock-time
+    })
+
     (ok amount)
   )
 )
 
-;; Unlock STX after the time has passed
-(define-public (unlock)
+;; ===== Extend Lock =====
+(define-public (extend-lock (new-unlock-time uint))
+  (let ((now stacks-block-time))
+    (asserts! (> new-unlock-time now) (err u102))
+
+    (match (get-vault tx-sender)
+      vault
+      (begin
+        (asserts! (> new-unlock-time (get unlock-time vault)) (err u103))
+        (map-set vaults tx-sender {
+          balance: (get balance vault),
+          unlock-time: new-unlock-time
+        })
+        (ok new-unlock-time)
+      )
+      (err u404)
+    )
+  )
+)
+
+;; ===== Withdraw =====
+(define-public (withdraw)
   (let (
         (now stacks-block-time)
-        (amount (var-get locked-amount))
+        (vault-opt (get-vault tx-sender))
        )
-    (asserts! (>= now UNLOCK_TIME) (err u101))
-    (asserts! (> amount u0) (err u102))
-    (asserts! (is-eq tx-sender (var-get owner)) (err u103))
+    (match vault-opt
+      vault
+      (let (
+            (balance (get balance vault))
+            (unlock-time (get unlock-time vault))
+           )
+        (asserts! (> balance u0) (err u105))
 
-    (begin
-      (var-set locked-amount u0)
-      (try!
-        (stx-transfer?
-          amount
-          tx-sender
-          tx-sender
+        (if (>= now unlock-time)
+          ;; Normal withdrawal
+          (begin
+            (map-delete vaults tx-sender)
+            (try!
+              (stx-transfer?
+                balance
+                tx-sender
+                tx-sender
+              )
+            )
+            (ok balance)
+          )
+
+          ;; Early withdrawal with penalty
+          (let (
+                (penalty (/ (* balance EARLY_PENALTY_BP) BASIS_POINTS))
+                (payout (- balance penalty))
+               )
+            (map-delete vaults tx-sender)
+            (try!
+              (stx-transfer?
+                payout
+                tx-sender
+                tx-sender
+              )
+            )
+            (ok payout)
+          )
         )
       )
-      (ok amount)
+      (err u404)
     )
   )
 )
