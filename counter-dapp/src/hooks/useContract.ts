@@ -4,17 +4,17 @@ import {
     fetchCallReadOnlyFunction,
     type ClarityValue,
 } from '@stacks/transactions';
-import { STACKS_MAINNET } from '@stacks/network';
+import { STACKS_TESTNET } from '@stacks/network';
 
 interface CallContractParams {
     functionName: string;
     functionArgs?: ClarityValue[];
 }
 
-const contract = 'SP13J1C3K69H3EDG2SVJ21SQ6GXD6A6F860HWK3ZJ.counter';
-const contractAddress = 'SP13J1C3K69H3EDG2SVJ21SQ6GXD6A6F860HWK3ZJ';
-const contractName = 'counter';
-const network = STACKS_MAINNET;
+const contract = 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN.counter';
+const contractAddress = 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN';
+const contractName = 'counterr';
+const network = STACKS_TESTNET;
 
 export function useContract() {
     const callContract = useCallback(
@@ -43,7 +43,7 @@ export function useContract() {
         async (
             functionName: string,
             functionArgs: ClarityValue[] = [],
-            senderAddress = 'SP13J1C3K69H3EDG2SVJ21SQ6GXD6A6F860HWK3ZJ'
+            senderAddress = 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN'
         ) => {
             try {
                 const options = {

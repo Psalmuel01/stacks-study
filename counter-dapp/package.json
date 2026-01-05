@@ -10,10 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reown/appkit": "^1.8.15",
+    "@reown/appkit-common": "^1.8.15",
+    "@reown/appkit-universal-connector": "^1.8.15",
     "@stacks/connect": "^8.1.9",
     "@stacks/network": "^7.0.2",
     "@stacks/transactions": "^7.0.6",
     "@tailwindcss/vite": "^4.1.8",
+    "ethers": "^6.16.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
