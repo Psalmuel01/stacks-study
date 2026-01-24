@@ -1,0 +1,32 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: votring
+            expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 41530
+            path: contracts/votring.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: votrnig
+            expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 40910
+            path: contracts/votrnig.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: votting
+            expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 40270
+            path: contracts/votting.clar
+            anchor-block-only: true
+            clarity-version: 4
+      epoch: "3.3"
