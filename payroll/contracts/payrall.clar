@@ -1,5 +1,3 @@
-(use-trait sip010 .usdcx-trait.sip010)
-
 (define-constant ERR-NOT-EMPLOYER u200)
 (define-constant ERR-INSUFFICIENT-BALANCE u201)
 
@@ -14,8 +12,8 @@
 )
 
 (define-data-var stream-counter uint u0)
-(define-data-var usdcx <sip010> .usdcx)
-
+(define-constant USDCX 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx)
+(define-constant SALARY 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN.salary)
 ;; --- employer management ---
 
 (define-public (register-employer (metadata (string-ascii 256)))
@@ -43,7 +41,7 @@
     ;; ensure employer has enough USDCx
     (let ((balance
             (unwrap-panic
-              (contract-call? (var-get usdcx)
+              (contract-call? USDCX
                 get-balance
                 tx-sender))))
       (asserts! (>= balance total-amount) ERR-INSUFFICIENT-BALANCE)
@@ -57,16 +55,17 @@
       ;; deploy new stream contract
       (let (
             (stream
+            (unwrap-panic
               (contract-call?
-                .salary-stream
+                SALARY
                 initialize
                 tx-sender
                 employee
-                (var-get usdcx)
+                USDCX
                 total-amount
                 start
                 end))
-           )
+           ))
         (map-set streams id stream)
         (ok id)
       )

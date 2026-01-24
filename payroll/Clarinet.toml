@@ -10,6 +10,9 @@ contract_id = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx-v1'
 
 [[project.requirements]]
 contract_id = 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN.usdxx'
+
+[[project.requirements]]
+contract_id = 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN.salary'
 [contracts.payrall]
 path = 'contracts/payrall.clar'
 clarity_version = 4
