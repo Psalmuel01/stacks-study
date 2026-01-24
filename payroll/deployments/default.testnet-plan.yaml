@@ -1,0 +1,59 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - requirement-publish:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sip-010-trait-ft-standard
+            remap-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            remap-principals:
+              ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 8400
+            path: "./.cache/requirements/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sip-010-trait-ft-standard.clar"
+            clarity-version: 3
+      epoch: "3.1"
+    - id: 1
+      transactions:
+        - requirement-publish:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx
+            remap-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            remap-principals:
+              ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 79150
+            path: "./.cache/requirements/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx.clar"
+            clarity-version: 3
+        - requirement-publish:
+            contract-id: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx-v1
+            remap-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            remap-principals:
+              ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 138980
+            path: "./.cache/requirements/ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx-v1.clar"
+            clarity-version: 3
+        - contract-publish:
+            contract-name: payrall
+            expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 618091
+            path: contracts/payrall.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: salary
+            expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 618202
+            path: contracts/salary.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: usdxx
+            expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
+            cost: 617310
+            path: contracts/usdxx.clar
+            anchor-block-only: true
+            clarity-version: 4
+      epoch: "3.3"
