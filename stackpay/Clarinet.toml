@@ -5,8 +5,13 @@ authors = []
 telemetry = true
 cache_dir = './.cache'
 requirements = []
-[contracts.arch]
-path = 'contracts/arch.clar'
+[contracts.archx]
+path = 'contracts/archx.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.procx]
+path = 'contracts/procx.clar'
 clarity_version = 4
 epoch = 'latest'
 [repl.analysis]
