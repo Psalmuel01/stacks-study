@@ -46,6 +46,7 @@
 
 (define-constant CURRENCY_STX "STX")
 (define-constant CURRENCY_SBTC "sBTC")
+(define-constant CURRENCY_USDC "USDC")
 
 ;; data-vars
 
@@ -202,9 +203,10 @@
     (asserts! (get is-active m) ERR_UNAUTHORIZED)
     (asserts! (valid-principal recipient) ERR_INVALID_PRINCIPAL)
     (asserts! (> amount u0) ERR_INVALID_AMOUNT)
-    (asserts! (or (is-eq currency CURRENCY_STX) (is-eq currency CURRENCY_SBTC))
-      ERR_INVALID_INPUT
-    )
+    (asserts! (or 
+      (is-eq currency CURRENCY_STX) 
+      (or (is-eq currency CURRENCY_SBTC) (is-eq currency CURRENCY_USDC))
+    ) ERR_INVALID_INPUT)
     (asserts! (> expires-in-blocks u0) ERR_INVALID_INPUT)
     (match webhook
       w (asserts! (is-eq (slice? w u0 u5) (some "https")) ERR_INVALID_WEBHOOK)
