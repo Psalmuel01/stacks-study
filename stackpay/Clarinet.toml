@@ -7,13 +7,16 @@ cache_dir = './.cache'
 
 [[project.requirements]]
 contract_id = 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard'
-[contracts.architecturex]
-path = 'contracts/architecturex.clar'
+
+[[project.requirements]]
+contract_id = 'ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN.architecturexx'
+[contracts.architecturexx]
+path = 'contracts/architecturexx.clar'
 clarity_version = 4
 epoch = 'latest'
 
-[contracts.processorxx]
-path = 'contracts/processorxx.clar'
+[contracts.processorxxx]
+path = 'contracts/processorxxx.clar'
 clarity_version = 4
 epoch = 'latest'
 [repl.analysis]

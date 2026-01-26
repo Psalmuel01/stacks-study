@@ -1,6 +1,6 @@
 ;; StackPay Payment Processor (Iteration: Balance + Withdrawals)
 
-(use-trait invoice-trait .architecturex.invoice-trait)
+(use-trait invoice-trait .architecturexx.invoice-trait)
 (use-trait sip-010-trait 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
 
 ;; constants
@@ -102,7 +102,7 @@
     )
     (let (
             (payer tx-sender)
-            (inv (unwrap! (contract-call? .architecturex get-invoice invoice-id)
+            (inv (unwrap! (contract-call? .architecturexx get-invoice invoice-id)
                 ERR_PAYMENT_FAILED
             ))
             (merchant (get merchant inv))
@@ -111,9 +111,12 @@
         (asserts! (> amount u0) ERR_INVALID_AMOUNT)
         (asserts! (is-eq amount (get amount inv)) ERR_INVALID_AMOUNT)
         ;; funds deposited to contract, not merchant
-        (try! (stx-transfer? amount payer tx-sender))
+        (as-contract? ((with-stx amount))
+            (try! (stx-transfer? amount payer contract-caller))
+        )
+
         (credit-balance merchant CURRENCY_STX amount)
-        (try! (contract-call? .architecturex process-payment invoice-id payer amount
+        (try! (contract-call? .architecturexx process-payment invoice-id payer amount
             tx-id
         ))
         (ok true)
@@ -128,7 +131,7 @@
     )
     (let (
             (payer tx-sender)
-            (inv (unwrap! (contract-call? .architecturex get-invoice invoice-id)
+            (inv (unwrap! (contract-call? .architecturexx get-invoice invoice-id)
                 ERR_PAYMENT_FAILED
             ))
             (currency (get currency inv))
@@ -140,20 +143,23 @@
             (reg (unwrap! (get token-contract info) ERR_INVALID_TOKEN))
         )
         ;; ensure invoice currency matches the token we looked up
-        (asserts! (or 
-            (is-eq currency CURRENCY_SBTC) 
+        (asserts! (or
+            (is-eq currency CURRENCY_SBTC)
             (is-eq currency CURRENCY_USDC)
         ) ERR_INVALID_INPUT)
-        
+
         ;; ensure the passed token trait matches our registry
         (asserts! (is-eq reg (contract-of token)) ERR_INVALID_TOKEN)
         (asserts! (> amount u0) ERR_INVALID_AMOUNT)
         (asserts! (is-eq amount (get amount inv)) ERR_INVALID_AMOUNT)
-        
+
         ;; transfer to contract
-        (try! (contract-call? token transfer amount payer tx-sender none))
+        (as-contract? ((with-ft token amount))
+            (try! (contract-call? token transfer amount payer contract-caller none))
+        )
+
         (credit-balance merchant currency amount)
-        (try! (contract-call? .architecturex process-payment invoice-id payer amount
+        (try! (contract-call? .architecturexx process-payment invoice-id payer amount
             tx-id
         ))
         (ok true)
@@ -181,7 +187,9 @@
         (asserts! (>= (get amount bal) amount) ERR_INSUFFICIENT_BALANCE)
         (try! (debit-balance tx-sender currency amount))
         (if (is-eq currency CURRENCY_STX)
-            (try! (stx-transfer? payout tx-sender tx-sender))
+            (as-contract? ((with-stx payout))
+                (try! (stx-transfer? payout contract-caller tx-sender))
+            )
             (let (
                     (info (unwrap!
                         (map-get? supported-tokens { currency: CURRENCY_SBTC })
@@ -190,9 +198,10 @@
                     (reg (unwrap! (get token-contract info) ERR_INVALID_TOKEN))
                 )
                 (asserts! (is-eq reg (contract-of token)) ERR_INVALID_TOKEN)
-                (try! (contract-call? token transfer payout tx-sender
-                    tx-sender none
-                ))
+                (as-contract? ((with-ft token payout))
+                    (try! (contract-call? token transfer payout contract-caller tx-sender none))
+                )
+
             )
         )
         (ok {

@@ -20,17 +20,17 @@ plan:
     - id: 1
       transactions:
         - contract-publish:
-            contract-name: architecturex
+            contract-name: architecturexx
             expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
-            cost: 91600
-            path: contracts/architecturex.clar
+            cost: 742907
+            path: contracts/architecturexx.clar
             anchor-block-only: true
             clarity-version: 4
         - contract-publish:
-            contract-name: processorxx
+            contract-name: processorxxx
             expected-sender: ST1H7G0B7BBM991P2KA77R0XHDRNYCWH8H92TT4QN
-            cost: 65740
-            path: contracts/processorxx.clar
+            cost: 741442
+            path: contracts/processorxxx.clar
             anchor-block-only: true
             clarity-version: 4
       epoch: "3.3"
