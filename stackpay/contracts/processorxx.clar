@@ -111,7 +111,7 @@
         (asserts! (> amount u0) ERR_INVALID_AMOUNT)
         (asserts! (is-eq amount (get amount inv)) ERR_INVALID_AMOUNT)
         ;; funds deposited to contract, not merchant
-        (try! (stx-transfer? amount payer contract-caller))
+        (try! (stx-transfer? amount payer tx-sender))
         (credit-balance merchant CURRENCY_STX amount)
         (try! (contract-call? .architecturex process-payment invoice-id payer amount
             tx-id
@@ -151,7 +151,7 @@
         (asserts! (is-eq amount (get amount inv)) ERR_INVALID_AMOUNT)
         
         ;; transfer to contract
-        (try! (contract-call? token transfer amount payer contract-caller none))
+        (try! (contract-call? token transfer amount payer tx-sender none))
         (credit-balance merchant currency amount)
         (try! (contract-call? .architecturex process-payment invoice-id payer amount
             tx-id
@@ -181,7 +181,7 @@
         (asserts! (>= (get amount bal) amount) ERR_INSUFFICIENT_BALANCE)
         (try! (debit-balance tx-sender currency amount))
         (if (is-eq currency CURRENCY_STX)
-            (try! (stx-transfer? payout contract-caller tx-sender))
+            (try! (stx-transfer? payout tx-sender tx-sender))
             (let (
                     (info (unwrap!
                         (map-get? supported-tokens { currency: CURRENCY_SBTC })
@@ -190,7 +190,7 @@
                     (reg (unwrap! (get token-contract info) ERR_INVALID_TOKEN))
                 )
                 (asserts! (is-eq reg (contract-of token)) ERR_INVALID_TOKEN)
-                (try! (contract-call? token transfer payout contract-caller
+                (try! (contract-call? token transfer payout tx-sender
                     tx-sender none
                 ))
             )

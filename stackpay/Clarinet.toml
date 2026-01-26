@@ -4,14 +4,16 @@ description = ''
 authors = []
 telemetry = true
 cache_dir = './.cache'
-requirements = []
+
+[[project.requirements]]
+contract_id = 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard'
 [contracts.architecturex]
 path = 'contracts/architecturex.clar'
 clarity_version = 4
 epoch = 'latest'
 
-[contracts.processorx]
-path = 'contracts/processorx.clar'
+[contracts.processorxx]
+path = 'contracts/processorxx.clar'
 clarity_version = 4
 epoch = 'latest'
 [repl.analysis]
